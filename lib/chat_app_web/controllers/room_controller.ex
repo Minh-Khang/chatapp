@@ -7,6 +7,7 @@ defmodule ChatAppWeb.RoomController do
   # Change to Plug model AuthUser 
   # plug :auth_user when action in [:new, :create, :show, :edit, :update, :delete]
   plug ChatAppWeb.Plugs.AuthUser when action not in [:index]
+  plug :authorize_user when action in [:edit, :update, :delete]
 
   def index(conn, _params) do
     rooms = Talk.list_rooms()
@@ -19,7 +20,7 @@ defmodule ChatAppWeb.RoomController do
   end
 
   def create(conn, %{"room" => room_params}) do
-    case Talk.create_rooms(room_params) do
+    case Talk.create_rooms(conn.assigns.current_user, room_params) do
       {:ok, _room} ->
         conn
         |> put_flash(:info, "Room Created")
@@ -31,18 +32,18 @@ defmodule ChatAppWeb.RoomController do
   end
 
   def show(conn, %{"id" => id}) do
-    room = Talk.get_room(id)
+    room = Talk.get_room!(id)
     render(conn, "show.html", room: room)
   end
 
   def edit(conn, %{"id" => id}) do
-    room = Talk.get_room(id)
+    room = Talk.get_room!(id)
     changeset = Talk.change_room(room)
     render(conn, "edit.html", room: room, changeset: changeset)
   end
 
   def update(conn, %{"id" => id, "room" => room_params}) do
-    room = Talk.get_room(id)
+    room = Talk.get_room!(id)
 
     case Talk.update_room(room, room_params) do
       {:ok, _} ->
@@ -55,7 +56,7 @@ defmodule ChatAppWeb.RoomController do
   end
 
   def delete(conn, %{"id" => id}) do
-    room = Talk.get_room(id)
+    room = Talk.get_room!(id)
     {:ok, _room} = Talk.delete_room(room)
 
     conn
@@ -74,4 +75,18 @@ defmodule ChatAppWeb.RoomController do
   #     |> halt
   #   end
   # end
+
+  defp authorize_user(conn, _params) do
+    %{params: %{"id" => room_id}} = conn
+    room = Talk.get_room!(room_id)
+
+    if conn.assigns.current_user.id == room.user_id do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You are not authorized")
+      |> redirect(to: Routes.room_path(conn, :index))
+      |> halt
+    end
+  end
 end
