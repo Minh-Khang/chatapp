@@ -4,6 +4,10 @@ defmodule ChatAppWeb.RoomController do
   alias ChatApp.Talk.Room
   alias ChatApp.Talk
 
+  # Change to Plug model AuthUser 
+  # plug :auth_user when action in [:new, :create, :show, :edit, :update, :delete]
+  plug ChatAppWeb.Plugs.AuthUser when action not in [:index]
+
   def index(conn, _params) do
     rooms = Talk.list_rooms()
     render(conn, "index.html", rooms: rooms)
@@ -58,4 +62,16 @@ defmodule ChatAppWeb.RoomController do
     |> put_flash(:info, "Room deleled!")
     |> redirect(to: Routes.room_path(conn, :index))
   end
+
+  # Change to Plug model AuthUser 
+  # defp auth_user(conn, _params) do
+  #   if conn.assigns.signed_in? do
+  #     conn
+  #   else
+  #     conn
+  #     |> put_flash(:error, "You must be signed in")
+  #     |> redirect(to: Routes.session_path(conn, :new))
+  #     |> halt
+  #   end
+  # end
 end
