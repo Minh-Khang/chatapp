@@ -3,10 +3,11 @@ defmodule ChatAppWeb.RoomController do
 
   alias ChatApp.Talk.Room
   alias ChatApp.Talk
+  alias ChatAppWeb.Plugs.AuthUser
 
   # Change to Plug model AuthUser 
   # plug :auth_user when action in [:new, :create, :show, :edit, :update, :delete]
-  plug ChatAppWeb.Plugs.AuthUser when action not in [:index]
+  plug AuthUser when action not in [:index]
   plug :authorize_user when action in [:edit, :update, :delete]
 
   def index(conn, _params) do
@@ -80,7 +81,7 @@ defmodule ChatAppWeb.RoomController do
     %{params: %{"id" => room_id}} = conn
     room = Talk.get_room!(room_id)
 
-    if conn.assigns.current_user.id == room.user_id do
+    if AuthUser.can_access?(conn.assigns.current_user, room) do
       conn
     else
       conn
