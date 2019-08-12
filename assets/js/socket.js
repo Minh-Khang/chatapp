@@ -38,8 +38,9 @@ if(roomId){
   })
 
   const displayMessage = (msg) => {
+    console.log('display message')
     let template = `
-      <li class="list-group-item"> ${msg.body} </li>
+      <li class="list-group-item"><strong>${msg.user.username}</strong>: ${msg.body} </li>
     `
 
     document.querySelector("#display").innerHTML += template
