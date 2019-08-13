@@ -6,11 +6,15 @@
 //
 // Pass the token on params as below. Or remove it
 // from the params if you are not using authentication.
-import {Socket} from "phoenix"
+import {
+  Socket,
+  Presence
+} from "phoenix"
 
 let socket = new Socket("/socket", {params: {token: window.userToken}})
 
 let roomId = window.roomId
+let presences = {}
 
 socket.connect()
 
@@ -24,6 +28,18 @@ if(roomId){
   channel.on(`room:${roomId}:new_message`, (message) => {
     console.log(message)
     displayMessage(message)
+  })
+
+  channel.on("presence_state", state => {
+    presences = Presence.syncState(presences, state)
+    console.log(presences)
+    displayUsers(presences)
+  })
+
+  channel.on("presence_diff", state => {
+    presences = Presence.syncDiff(presences, state)
+    console.log(presences)
+    displayUsers(presences)
   })
 
   document.querySelector("#message-form").addEventListener("submit", (e) => {
@@ -44,6 +60,19 @@ if(roomId){
     `
 
     document.querySelector("#display").innerHTML += template
+  }
+
+  const displayUsers = presences => {
+    let usersOnline = Presence.list(presences, (_id, {
+      metas: [
+      user, ...rest
+      ]
+    }) => {
+      return `
+        <div id="user-${user.user_id}"><strong class="text-secondary">${user.username}</strong></div>
+      `
+    }).join("")
+    document.querySelector("#user-online").innerHTML = usersOnline
   }
 }
 export default socket

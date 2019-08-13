@@ -9,15 +9,27 @@
 	  data: [confirm: "Do you really want to delele?"], class: "btn btn-danger" %>
 	</div>
 <% end %>
-
-<ul class="list-group mt-5" id="display"></ul>
-
-<form class="input-group mt-3" id="message-form">
-	<input type="text" class="form-control" id="message-body" placeholder="Input message for  #<%= @room.name %>">
-	<div class="input-group-append">
-		<button class="btn btn-outline-info" id="message-button">Send</button>
+<div class="row">
+	<div class="col-md-9">
+		<ul class="list-group mt-5" id="display"></ul>
+		<form class="input-group mt-3" id="message-form">
+			<input type="text" class="form-control" id="message-body" placeholder="Input message for  #<%= @room.name %>">
+			<div class="input-group-append">
+				<button class="btn btn-outline-info" id="message-button">Send</button>
+			</div>
+		</form>
 	</div>
-</form>
+	<div class="col-md-3">
+		<div class="card">
+			<div class="card-header text-white bg-secondary">
+				User Online: 
+			</div>
+			<div class="card-body">
+				<div id="user-online"></div>
+			</div>
+		</div>
+	</div>
+</div>
 
 <script>
 	window.roomId = "<%= @room.id %>"
